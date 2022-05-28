@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<head>
+<h2 style="font-family: Arial, Helvetica, sans-serif;">
+Caster of Magic Damage Calculator
+</h2>
+<style type="text/css">
+
+.select-val
+{
+	display: inline-block;
+}
+
+.entity-header
+{
+	margin: 10px;
+}
+
+.select-item
+{
+	margin: 10px;
+}
+
+.select-label
+{
+	display: inline-block;
+	width: 80px;
+}
+
+.row {
+  display: flex;
+  width: 900px;
+}
+
+.column {
+  flex: 50%;
+}
+
+.input-text 
+{
+	display: inline-block;
+	width: 40px;	
+}
+
+select {
+  width: 70px;
+  padding: 5px 5px 5px 5px;
+  font-size: 14px;
+}
+
+.bardiv-actbar
+{
+    display: inline-block;
+}
+
+.probrect
+{
+	display: inline-block;
+//	opacity: 0.05;
+}
+
+.svg-component
+{
+	height: 100%; 
+	margin: 10px;
+	overflow: visible;	
+    dominant-baseline: middle;	
+}
+
+</style>
+</head>
+
+<script src="angular.min.js">
+</script>
+
+<script src="ui-bootstrap-tpls-0.12.0.js">
+</script>
+
+<script src="DmgCalc.js">
+</script>
+
+<body>
+
+<div ng-app="myApp" ng-controller="myCtrl" id="content" >
+
+<div class="row">
+
+<div ng-repeat="entity in data.entities" class="column" style="background-color: {{entity.color}}">
+
+<h4 class="entity-header">
+<span>
+{{entity.name}}
+</span>
+</h4>
+
+<div class="select-item">
+    <label class="select-label" for="attackSelect"> Figures: </label>
+    <select name="attackSelect" id="attackSelect"
+		class="select-val"
+		ng-options="option.name for option in data.availableFigures track by option.id"
+		ng-model="entity.figures">
+    </select>
+</div>
+
+<div class="select-item">
+    <label class="select-label" for="attackSelect"> Attack: </label>
+    <select name="attackSelect" id="attackSelect"
+		class="select-val"
+		ng-options="option.name for option in data.availableAttacks track by option.id"
+		ng-model="entity.attack">
+    </select>
+</div>
+	
+<div class="select-item">	
+    <label class="select-label" for="defenceSelect"> Defence: </label>
+    <select name="defenceSelect" id="defenceSelect"
+		class="select-val"	
+		ng-options="option.name for option in data.availableDefenses track by option.id"
+		ng-model="entity.defense">
+    </select>	
+</div>
+	
+<div class="select-item">	
+    <label class="select-label" for="figureHP"> Figure HP: </label>
+    <select name="figureHP" id="figureHP"
+		class="select-val"	
+		ng-options="option.name for option in data.availableFigureHP track by option.id"
+		ng-model="entity.figureHP">
+    </select>	
+</div>
+
+<div class="select-item">
+    <label class="select-label" for="toHitSelect"> To Hit: </label>
+	<input type="text" id="tohitinput"  class="input-text" ng-model="entity.tohit.id">
+    <label>%</label>
+    <select name="toHitSelect" id="toHitSelect"
+		class="select-val"	
+		ng-options="option.name for option in data.availableToHit track by option.id"
+		ng-model="entity.tohit">
+    </select>
+</div>
+
+<div class="select-item">
+    <label class="select-label" for="defenceSelect"> To Block: </label>
+	<input type="text" id="toblockinput" class="input-text" ng-model="entity.todef.id">
+    <label>%</label>
+    <select name="defenceSelect" id="defenceSelect"
+		class="select-val"	
+		ng-options="option.name for option in data.availableToBlock track by option.id"
+		ng-model="entity.todef">
+    </select>
+</div>
+
+<div class="select-item">
+    <label class="select-label" for="dmgTakenSelect"> Dmg Taken: </label>
+    <select name="dmgTakenSelect" id="dmgTakenSelect"
+		class="select-val"	
+		ng-options="option.name for option in entity.dmgDoneOptions track by option.id"
+		ng-model="entity.dmgDone">
+    </select>
+</div>
+
+
+
+</div>
+
+</div>
+<br>
+
+<div class="row">
+
+<div ng-repeat="entity in data.entities" class="column" style="background-color: {{entity.color}}">
+
+<h4 class="entity-header">
+<span>
+Expected Damage:
+</span>
+<span>
+{{entity.opponent.expectedDamage}}
+</span>
+</h4>
+
+<svg class="svg-component" 
+ng-style="{'height': entity.opponent.getTotalHeight(entity)}"
+ >
+
+<g ng-repeat="disp in entity.opponent.updateExpectedDamage(entity.opponent).res track by $index">
+
+<g>
+	<rect x="85" ng-attr-y="{{disp.y}}"
+		ng-style="{'width': disp.bw}" ng-attr-height="{{disp.h}}" fill="LightCyan">
+	</rect>
+</g>
+
+<g>
+	<rect x="0" ng-attr-y="{{disp.y}}" width="25px" ng-attr-height="{{disp.h}}" fill="PowderBlue"></rect>
+	<text x="5"
+	ng-style="{'height': disp.bh}"
+	ng-attr-y="{{disp.ty}}" class="small">{{disp.i}}:</text>
+</g>
+
+
+<rect class="probrect" class="bardiv-actbar"
+	x="85"
+	ng-style="{'width': disp.w, 'height': disp.h}"
+	ng-attr-y="{{disp.y}}"
+	fill="SkyBlue"
+	>
+	
+</rect>
+
+<g>
+	<rect x="25" ng-attr-y="{{disp.y}}" width="60px" ng-attr-height="{{disp.h}}" fill="LightGray"></rect>
+	<text x="30" 
+	ng-style="{'height': disp.bh, 'width': 55}"
+	ng-attr-y="{{disp.ty}}" >{{disp.val}}</text>
+</g>
+
+
+</g>
+
+</svg>
+</svg>
+</div>
+</div>
+</div>
+
+
+
+<script> 
+
+
+var app = angular.module('myApp', ['ui.bootstrap']);
+
+app.controller('myCtrl', function($scope) {
+	var MaxAttack = 30;
+	var MaxDefense = 30;
+	var MaxFigures = 30;
+	<!-- var toHitPercent = 30; -->
+    <!-- var toDefPercent = 30; -->
+    var Defence = 4;
+    var minToHit = 0;
+    var maxToHit = 100;
+	var MaxAvailableFigures = 9;
+	var MaxFigureHP = 42;
+	var initialized = false;
+	var runs = 0;
+	
+    attacks = getvalseq(0, MaxAttack);
+    defenses = getvalseq(0, MaxDefense);
+    tohits = getpercentseq(minToHit, maxToHit);
+    todef = getpercentseq(minToHit, maxToHit);
+	availableFigures = getvalseq(1, MaxAvailableFigures);
+	availableFigureHP = getvalseq(1, MaxFigureHP);
+
+	function create_entity(setting)
+	{
+		var ent = 
+		{
+			name: setting.name,
+			color: setting.color,
+			attack: attacks.length > 2 ? attacks[2] : null,
+			defense: defenses.length > 2 ? defenses[2] : null,
+			tohit: tohits.length > 3 ? tohits[3] : null,
+			todef: todef.length > 3 ? todef[3] : null,
+			figures: availableFigures.length > 0 ? availableFigures[1] : null,
+			figureHP: availableFigureHP.length > 0 ? availableFigureHP[2] : null,
+			dmgDoneOptions: [{id: 0, name: '0'}]
+		};
+		
+		ent.updateExpectedDamage = updateExpectedDamage;
+		ent.getTotalHeight = function(ent)
+		{
+			if (!ent.dmgDisp)
+			{
+				return 0;
+			}
+			return ent.dmgDisp.height;
+		}
+		updateDamageDone(ent);
+		return ent;
+	}
+	
+	function updateDamageDone(entity)
+	{
+		var maxDmg = entity.figures.id * entity.figureHP.id;
+		if (entity.maxDmg != maxDmg)
+		{
+			entity.dmgDoneOptions = getvalseq(0, maxDmg);
+			entity.maxDmg = maxDmg;
+			if (entity.dmgDone)
+			{
+				for (var i=0;i<entity.dmgDoneOptions.length;++i)
+				{
+					if (entity.dmgDoneOptions[i].id == entity.dmgDone.id)
+					{
+						entity.dmgDone = entity.dmgDoneOptions[i];
+						return entity.dmgDoneOptions;
+					}
+				}
+			}
+			entity.dmgDone = entity.dmgDoneOptions[0];
+		}
+		return entity.dmgDoneOptions;
+	}
+	
+	function create_entities(settings)
+	{
+		var res = [];
+		for (var s=0;s<settings.length; s++)
+		{
+			var ent = create_entity(settings[s]);
+			UpdateRemaningHP(ent);
+			res.push(ent);
+		}
+		
+		res[0].opponent = res[1];
+		res[1].opponent = res[0];
+		
+		return res;
+	}
+	
+	var entitySettings = 
+	[
+		{name: "Attacker", color: '#aaa'},
+		{name: "Defender", color: '#bbb'}
+	];
+	
+	function UpdateRemaningHP(entity)
+	{
+		var remainingHP = GetRemaningHP(
+            entity.figures.id,
+            entity.figureHP.id,
+            entity.figureHP.id);
+		entity.availableDmgDone = getvalseq(0, remainingHP);
+		entity.dmgDone = entity.availableDmgDone.length > 0 ? entity.availableDmgDone[0] : null;
+	}
+	
+	var createdEntities = create_entities(entitySettings);
+
+	function getvalseq(min, max)
+	{
+		var res = [];
+		for (var i=min;i<=max;++i)
+		{
+			res.push({id: i, name: String(i) });
+		}
+		return res;
+	}
+   
+   function getpercentseq(min, max) {
+       var res = [];
+       var i=min;
+       while (i<=max)
+       {
+           res.push({ id: i, name: String(i) + '%' });
+           i = i+10;
+       }
+       return res;
+   }
+
+   function getvalseqstart(min, max)
+   {
+		var res = [];
+		for (var i=min;i<=max;++i)
+		{
+			res.push({id: i, name: String(i) });
+		}
+		return res;
+   }   
+
+   $scope.data = {
+	entities : createdEntities,
+    availableAttacks: attacks,
+    availableDefenses: defenses,
+	availableToHit: tohits,
+	availableToBlock: todef,
+	availableFigures: availableFigures,
+	availableFigureHP: availableFigureHP
+   };
+   
+   
+   function updateEntityDamageDisp(entity)
+   {
+		updateDamageDone(entity);
+   
+		var attack = entity.attack.id;
+		var defence = entity.opponent.defense.id;
+		var toHit = entity.tohit.id/100;
+		var toDef = entity.opponent.todef.id/100;
+		toHit = toHit > 1.0 ? 1.0 : toHit;
+		toHit = toHit < 0 ? 0 : toHit;		
+		toDef = toDef > 1.0 ? 1.0 : toDef;
+		toDef = toDef < 0 ? 0 : toDef;
+	
+		var attackingFigures = entity.figures.id;
+		var defendingFigures = entity.opponent.figures.id;
+		var healthPerDefFigure = entity.opponent.figureHP.id;
+		var remaningHP = defendingFigures*healthPerDefFigure - entity.opponent.dmgDone.id;
+
+		var res = GetFiguresTopDefendingHP(healthPerDefFigure, remaningHP);
+        var defendingFiguresOut = res.defendingFiguresOut;
+        var topDefendingFigureHPOut = res.topDefendingFigureHPOut;
+
+        Assert(defendingFiguresOut >= 0 && defendingFiguresOut <= defendingFigures);
+
+		//var dmgDist = 
+		
+		function calcExpectedDamage(dmgDist)
+		{
+			var expected = 0;
+			for (var i=1;i<dmgDist.length;++i)
+			{
+				expected += i*dmgDist[i];
+			}
+			return TrimDecimalPlaces(expected, 2);
+		}
+			
+		var dmgDist = 
+			CalcFiguresDamageDist(
+            toHit,
+            toDef,
+            attack,
+            defence,
+            attackingFigures,
+            defendingFiguresOut,
+            healthPerDefFigure,
+            topDefendingFigureHPOut,
+			remaningHP);
+			
+			var dmgDisp =
+				buildBarsDisplayForDamagaDist(dmgDist);
+				
+		entity.expectedDamage = calcExpectedDamage(dmgDist);
+			
+		entity.dmgDisp = dmgDisp;
+		entity.drawnValue = {};
+		entity.drawnValue = shallowCopy(entity); // save last value of entity to avoid function calls if nothing changed
+   }
+   
+   function updateExpectedDamage(entity)
+	{
+		if (!initialized)
+		{
+			return {};
+		}
+		
+		// if not modified, return previous value
+		if (entity.drawnValue &&
+			shallowEqual(entity.drawnValue, entity, ['drawnValue'] )
+			&& shallowEqual(entity.opponent.drawnValue, entity.opponent, ['drawnValue']))
+		{
+			return entity.dmgDisp;
+		}
+		
+		updateEntityDamageDisp(entity);
+		updateEntityDamageDisp(entity.opponent);
+		return entity.dmgDisp;
+	}
+		
+		function TrimDecimalPlaces(num, places)
+		{
+			var mult = Math.pow(10, places);
+			var res = Math.round(num * mult) / mult;
+			return String(res);
+		}	
+
+		function GetFiguresTopDefendingHP(
+            healthPerDefFigure, // int
+            remaningHP // int
+            )
+		{
+		
+		    Assert(healthPerDefFigure > 0);
+		    Assert(remaningHP >= 0);
+
+		    var topDefendingFigureHPOut = remaningHP % healthPerDefFigure;
+		    topDefendingFigureHPOut = topDefendingFigureHPOut == 0 ? healthPerDefFigure : topDefendingFigureHPOut;
+		    var defendingFiguresOut = ((remaningHP - topDefendingFigureHPOut) / healthPerDefFigure)+1;
+		    Assert(remaningHP
+                == ((defendingFiguresOut - 1) * healthPerDefFigure + topDefendingFigureHPOut));
+		    Assert(defendingFiguresOut >= 0);
+		    Assert(topDefendingFigureHPOut >= 0);
+		    return {
+		        defendingFiguresOut: defendingFiguresOut, // int
+		        topDefendingFigureHPOut: topDefendingFigureHPOut // int
+		    }
+		}
+		
+		
+	
+		// build display of the distribution bars
+		function buildBarsDisplayForDamagaDist(dmgDist)
+		{		
+			var barheight=28;
+			var maxwidth=200;
+			var result = [];
+			
+			var maxZeroDmg = 0;
+			for (var j=0;j<dmgDist.length;++j)
+			{
+				if (dmgDist[j] > 0)
+				{
+					maxZeroDmg = j;
+				}
+			}
+			
+			++maxZeroDmg;
+			maxZeroDmg = maxZeroDmg < dmgDist.length? maxZeroDmg : dmgDist.length;
+			
+			for (var i=0;i<maxZeroDmg;++i)
+			{
+				var val = dmgDist[i];
+				var disp = {
+					i: i,
+					val: TrimDecimalPlaces(val*100, 2) + '%',
+					y: barheight*i,
+					w: String(val*maxwidth) + 'px',
+					h: String(barheight-2) + 'px',
+					bh: barheight+ 'px',
+					ty: barheight/2 + barheight*i,
+					bw: String(maxwidth)+'px' 
+				};
+				//console.log(disp);
+				result.push(disp);
+			}
+			
+			var res1 = 
+			{
+				height: String(barheight*maxZeroDmg) + 'px',
+				res: result
+			}
+			return res1;
+		}
+		
+		
+		// return a copy object, this is done to ensure we don't update when no field was modified
+		function shallowCopy(object1) {
+		var object2 ={};
+		  const keys1 = Object.getOwnPropertyNames(object1);
+		  for (let key of keys1) {
+			object2[key] = object1[key];
+		  }
+		  return object2;
+		}		
+		
+		// return true of shallow test of object fields are equal
+		function shallowEqual(object1, object2, ignore) {
+		  const keys1 = Object.getOwnPropertyNames(object1);
+		  const keys2 = Object.getOwnPropertyNames(object2);
+		  if (keys1.length !== keys2.length) {
+			return false;
+		  }
+		  for (let key of keys1) {
+			var isNotIgnore = !(ignore.includes(key));
+			if (isNotIgnore && object1[key] !== object2[key]) {
+			  return false;
+			}
+		  }
+		  return true;
+		}
+	
+		setTimeout(function() 
+		{
+			initialized = true;
+			updateExpectedDamage($scope.data.entities[0]);
+		}, 1);	
+});
+
+</script>
+
+</body>
+</html>
