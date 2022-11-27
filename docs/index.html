@@ -244,16 +244,16 @@ ng-style="{'height': entity.opponent.getTotalHeight(entity)}"
 var app = angular.module('myApp', ['ui.bootstrap']);
 
 app.controller('myCtrl', function($scope) {
-	var MaxAttack = 45;
-	var MaxDefense = 30;
-	var MaxFigures = 30;
+	var MaxAttack = 100;
+	var MaxDefense = 100;
+	var MaxFigures = 100;
 	<!-- var toHitPercent = 30; -->
     <!-- var toDefPercent = 30; -->
     var Defence = 4;
     var minToHit = 0;
     var maxToHit = 100;
-	var MaxAvailableFigures = 9;
-	var MaxFigureHP = 50;
+	var MaxAvailableFigures = 100;
+	var MaxFigureHP = 100;
 	var initialized = false;
 	var runs = 0;
 	
