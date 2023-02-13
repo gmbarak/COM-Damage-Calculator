@@ -11,6 +11,12 @@ Caster of Magic Damage Calculator
 	display: inline-block;
 }
 
+.select-val-replace-combo
+{
+	height: 24px;
+	display: inline-block;
+}
+
 .entity-header
 {
 	margin: 10px;
@@ -18,6 +24,12 @@ Caster of Magic Damage Calculator
 
 .select-item
 {
+	margin: 10px;
+}
+
+.select-item-combo-edit
+{
+	height: 28.62px;
 	margin: 10px;
 }
 
@@ -67,6 +79,16 @@ select {
     dominant-baseline: middle;	
 }
 
+.text-desc-div
+{
+	height: 50px;
+	display: inline-block;
+}
+
+.text-desc-div-label
+{
+	margin: 10px;
+}
 
 body {
   background-image: url("stars.jpg");
@@ -135,26 +157,36 @@ body {
     </select>	
 </div>
 
-<div class="select-item">
+<div class="select-item-combo-edit">
     <label class="select-label" for="toHitSelect"> To Hit: </label>
-	<input type="text" id="tohitinput"  class="input-text" ng-model="entity.tohit.id">
-    <label>%</label>
+	<!-- <input type="text" id="tohitinput" class="input-text" ng-model="entity.tohit.id"> -->
     <select name="toHitSelect" id="toHitSelect"
-		class="select-val"	
+		class="select-val"
+		ng-show="!(entity.explicitHit)"
 		ng-options="option.name for option in data.availableToHit track by option.id"
 		ng-model="entity.tohit">
     </select>
+    <input class="select-val-replace-combo" type="number" ng-model="entity.expHitVal"
+		ng-show="entity.explicitHit" min="0" max="100" required ng-trim="false">	
+    <label>%</label>
+	<input type="checkbox" ng-model="entity.explicitHit" class="select-val"	>
+	<Label class="select-label">Fraction</Label>
 </div>
 
-<div class="select-item">
+
+<div class="select-item-combo-edit">
     <label class="select-label" for="defenceSelect"> To Block: </label>
-	<input type="text" id="toblockinput" class="input-text" ng-model="entity.todef.id">
-    <label>%</label>
     <select name="defenceSelect" id="defenceSelect"
+		ng-show="!(entity.explicitBlock)"
 		class="select-val"	
 		ng-options="option.name for option in data.availableToBlock track by option.id"
 		ng-model="entity.todef">
     </select>
+    <input class="select-val-replace-combo" type="number" ng-model="entity.expBlockVal"
+		ng-show="entity.explicitBlock" min="0" max="100" required ng-trim="false">	
+    <label>%</label>
+	<input type="checkbox" ng-model="entity.explicitBlock" class="select-val"	>
+	<Label class="select-label">Fraction</Label>	
 </div>
 
 <div class="select-item">
@@ -167,6 +199,9 @@ body {
 </div>
 
 
+<div class="text-desc-div">
+	<label class="text-desc-div-label">{{entity.desc}}</label>
+</div>
 
 </div>
 
@@ -276,7 +311,12 @@ app.controller('myCtrl', function($scope) {
 			todef: todef.length > 3 ? todef[3] : null,
 			figures: availableFigures.length > 0 ? availableFigures[1] : null,
 			figureHP: availableFigureHP.length > 0 ? availableFigureHP[2] : null,
-			dmgDoneOptions: [{id: 0, name: '0'}]
+			dmgDoneOptions: [{id: 0, name: '0'}],
+			explicitHit: false,
+			expHitVal: 30,
+			explicitBlock: false,
+			expBlockVal: 30,
+			desc: ""
 		};
 		
 		ent.updateExpectedDamage = updateExpectedDamage;
@@ -390,6 +430,21 @@ app.controller('myCtrl', function($scope) {
 	availableFigureHP: availableFigureHP
    };
    
+   function getEntityToDef(entity)
+   {
+		var toDef = entity.explicitBlock ? entity.expBlockVal/100 : entity.todef.id/100;
+		toDef = toDef > 1.0 ? 1.0 : toDef;
+		toDef = toDef < 0 ? 0 : toDef;
+		return toDef;
+   }
+   
+   function getEntityToHit(entity)
+   {
+		var toHit = entity.explicitHit ? entity.expHitVal/100 : entity.tohit.id/100;
+		toHit = toHit > 1.0 ? 1.0 : toHit;
+		toHit = toHit < 0 ? 0 : toHit;
+		return toHit;
+   }   
    
    function updateEntityDamageDisp(entity)
    {
@@ -397,12 +452,8 @@ app.controller('myCtrl', function($scope) {
    
 		var attack = entity.attack.id;
 		var defence = entity.opponent.defense.id;
-		var toHit = entity.tohit.id/100;
-		var toDef = entity.opponent.todef.id/100;
-		toHit = toHit > 1.0 ? 1.0 : toHit;
-		toHit = toHit < 0 ? 0 : toHit;		
-		toDef = toDef > 1.0 ? 1.0 : toDef;
-		toDef = toDef < 0 ? 0 : toDef;
+		var toHit = getEntityToHit(entity);
+		var toDef = getEntityToDef(entity.opponent);
 	
 		var attackingFigures = entity.figures.id;
 		var defendingFigures = entity.opponent.figures.id;
@@ -412,6 +463,9 @@ app.controller('myCtrl', function($scope) {
 		var res = GetFiguresTopDefendingHP(healthPerDefFigure, remaningHP);
         var defendingFiguresOut = res.defendingFiguresOut;
         var topDefendingFigureHPOut = res.topDefendingFigureHPOut;
+		
+		var selfEntityToDef = getEntityToDef(entity);
+		entity.desc = "attack: " +attack +", defense: " + entity.defense.id + ", to hit: " + TrimDecimalPlaces(toHit*100, 2) +  "%, to block: " + TrimDecimalPlaces(selfEntityToDef*100, 2) +  "%";
 
         Assert(defendingFiguresOut >= 0 && defendingFiguresOut <= defendingFigures);
 
