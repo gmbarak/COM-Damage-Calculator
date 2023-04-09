@@ -198,6 +198,11 @@ body {
     </select>
 </div>
 
+<div class="select-item">
+	<input type="checkbox" ng-model="entity.invul" class="select-val"	>
+	<Label class="select-label">Invulnerability</Label>
+</div>
+
 
 <div class="text-desc-div">
 	<label class="text-desc-div-label">{{entity.desc}}</label>
@@ -213,8 +218,7 @@ body {
 <div ng-repeat="entity in data.entities" class="column" style="background-color: {{entity.color}}">
 
 <h4 class="entity-header">
-<span>
-Expected Damage:
+<span>Expected Damage:
 </span>
 <span>
 {{entity.opponent.expectedDamage}}
@@ -313,6 +317,7 @@ app.controller('myCtrl', function($scope) {
 			figureHP: availableFigureHP.length > 0 ? availableFigureHP[2] : null,
 			dmgDoneOptions: [{id: 0, name: '0'}],
 			explicitHit: false,
+			invul: false,
 			expHitVal: 30,
 			explicitBlock: false,
 			expBlockVal: 30,
@@ -492,6 +497,20 @@ app.controller('myCtrl', function($scope) {
             healthPerDefFigure,
             topDefendingFigureHPOut,
 			remaningHP);
+			
+			if (entity.opponent.invul)
+			{
+				if (dmgDist.length <= 2)
+				{
+					dmgDist = [1];
+				}
+				else
+				{
+					dmgDist[2] = dmgDist[0] + dmgDist[1];
+					dmgDist.shift();
+					dmgDist.shift();					
+				}
+			}
 			
 			var dmgDisp =
 				buildBarsDisplayForDamagaDist(dmgDist);
