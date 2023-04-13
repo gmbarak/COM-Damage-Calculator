@@ -81,12 +81,13 @@ select {
 
 .text-desc-div
 {
-	height: 50px;
+	height: 75px;
 	display: inline-block;
 }
 
 .text-desc-div-label
 {
+	display:block;
 	margin: 10px;
 }
 
@@ -206,6 +207,7 @@ body {
 
 <div class="text-desc-div">
 	<label class="text-desc-div-label">{{entity.desc}}</label>
+	<label class="text-desc-div-label">{{entity.desc2}}</label>	
 </div>
 
 </div>
@@ -295,6 +297,9 @@ app.controller('myCtrl', function($scope) {
 	var MaxFigureHP = 100;
 	var initialized = false;
 	var runs = 0;
+	var toDefLimit = 15;
+	var toDefAfterLimit = 0.3;
+	
 	
     attacks = getvalseq(0, MaxAttack);
     defenses = getvalseq(0, MaxDefense);
@@ -321,7 +326,8 @@ app.controller('myCtrl', function($scope) {
 			expHitVal: 30,
 			explicitBlock: false,
 			expBlockVal: 30,
-			desc: ""
+			desc: "",
+			desc2: ""			
 		};
 		
 		ent.updateExpectedDamage = updateExpectedDamage;
@@ -470,7 +476,23 @@ app.controller('myCtrl', function($scope) {
         var topDefendingFigureHPOut = res.topDefendingFigureHPOut;
 		
 		var selfEntityToDef = getEntityToDef(entity);
-		entity.desc = "attack: " +attack +", defense: " + entity.defense.id + ", to hit: " + TrimDecimalPlaces(toHit*100, 2) +  "%, to block: " + TrimDecimalPlaces(selfEntityToDef*100, 2) +  "%";
+		
+		var desc  = "";
+		var desc2  = "";		
+		if (entity.defense.id > toDefLimit && selfEntityToDef > toDefAfterLimit)
+		{		
+			desc = "attack: " +attack + ", " + toDefLimit + " defense at " + TrimDecimalPlaces(selfEntityToDef*100, 2) + "%, " +
+			(entity.defense.id - toDefLimit) + " defense at " + TrimDecimalPlaces(toDefAfterLimit*100, 2) +"%"
+			desc2 = "to hit: " + TrimDecimalPlaces(toHit*100, 2) +  "%";
+		}
+		else
+		{
+			desc = "attack: " +attack + ", defense: " + entity.defense.id + ", to hit: " + TrimDecimalPlaces(toHit*100, 2) +  "%, to block: " + TrimDecimalPlaces(selfEntityToDef*100, 2) +  "%";
+			desc2 = "";
+		}
+	
+		entity.desc = desc;
+		entity.desc2 = desc2;
 
         Assert(defendingFiguresOut >= 0 && defendingFiguresOut <= defendingFigures);
 
@@ -496,7 +518,9 @@ app.controller('myCtrl', function($scope) {
             defendingFiguresOut,
             healthPerDefFigure,
             topDefendingFigureHPOut,
-			remaningHP);
+			remaningHP,
+			toDefLimit,
+			toDefAfterLimit);
 			
 			if (entity.opponent.invul)
 			{

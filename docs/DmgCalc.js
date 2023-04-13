@@ -9,9 +9,19 @@
             defendingFigures, // int
             healthPerDefFigure, // int
             topDefendingFigureHP, // int
-			RemaningHP // int
-            )
+			RemaningHP, // int
+			toDefLimit,
+			toDefAfterLimit)
         {
+			// var sss1 = 0;
+			// for (var i=0;i<=20;++i)
+			// {
+				// res11 = BinomialLimitedResult(i, 0.5, 20, 15, 0.3);
+				// sss1 += res11;
+			    // console.error('p: ' + i + " = " + res11);
+			// }
+		    // console.error('sum: ' + sss1);
+			
             // lookup from damage done, to probablity of damage by a single attacking figure
 			// is used to save previous results for improving performance 
             //var remaningHPToDmgDist = {};
@@ -65,7 +75,9 @@
                                 0,
                                 stepDefendingFigures,
                                 healthPerDefFigure,
-                                steptopDefendingFigureHP);
+                                steptopDefendingFigureHP,
+								toDefLimit,
+								toDefAfterLimit);
 
                             // update the lookup for future searches
                             //remaningHPToDmgDist[remaningHP] = currFigureDamageDist;
@@ -98,7 +110,9 @@
         dmgDoneSoFar,
         defendingFigures,
         healthPerDefFigure,
-        topDefendingFigureHP)
+        topDefendingFigureHP,
+		toDefLimit,
+		toDefAfterLimit)
         {
             for (var hit = 0; hit <= Attack; ++hit)
             {
@@ -121,7 +135,9 @@
                         hit,
                         defendingFigures,
                         healthPerDefFigure,
-                        topDefendingFigureHP);
+                        topDefendingFigureHP,
+						toDefLimit,
+						toDefAfterLimit);
                 }
             }
         }
@@ -135,12 +151,15 @@
             attackHitsLeft, // int 
             defendingFigures, // int 
             healthPerDefFigure, // int 
-            topDefendingFigureHP // int 
-			)
+            topDefendingFigureHP, // int
+			toDefLimit,
+			toDefAfterLimit)
         {
             for (var def = 0; def <= Defence; ++def)
             {
-                var probDefence = BinomialResult(def, toDef, Defence);
+                //var probDefence = BinomialResult(def, toDef, Defence);
+                var probDefence = BinomialLimitedResult(def, toDef, Defence, toDefLimit, toDefAfterLimit);
+				
                 var dmgDoneToFigure = attackHitsLeft - def;
                 dmgDoneToFigure = dmgDoneToFigure < 0 ? 0 : dmgDoneToFigure;
                 dmgDoneToFigure = dmgDoneToFigure > topDefendingFigureHP ? topDefendingFigureHP : dmgDoneToFigure;
@@ -180,7 +199,9 @@
                                 attHitsLeft,
                                 remaningFigures,
                                 healthPerDefFigure,
-                                healthPerDefFigure);
+                                healthPerDefFigure,
+								toDefLimit,
+								toDefAfterLimit);
                             continue;
                         }
                     }
@@ -205,6 +226,32 @@
             var pPowNMinK = Math.pow(1 - p, n - k);
             var kfN = KFromN(n, k);
             return kfN * pPowK * pPowNMinK;
+        }
+		
+		function BinomialLimitedResult(k, p, n, limit, q)
+        {
+			if (n <= limit || p <= q)
+			{
+				return BinomialResult(k, p, n);;
+			}
+			else // n > limit 
+			{
+				var sum = 0;
+				// in the p part we will have number of successes not greather than limit
+				var pPartMax = k > limit ? limit : k;
+				// in the p part minimal number of successes not smaller than k-(n-limit)
+				// example: 17 defense 16 successes: minimum number of defense with p=50% is 14 = 16-(17-15)
+				var pPartMin = k-(n-limit) < 0 ? 0 : k-(n-limit);
+				
+				// i = how many successes were in the p part
+				for (var i= pPartMin ; i <= pPartMax ; ++i)
+				{
+					pPart = BinomialResult(i, p, limit);
+					qPart = BinomialResult(k-i, q, n-limit);
+					sum += pPart*qPart;
+				}
+				return sum;
+			}
         }
 
 		// the number of distinct ways to place k items in n slots
